@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>Hmk5Q4</title>
+		<script src="https://d3js.org/d3.v4.min.js"></script>
+
+	</head>
+	<body>
+
+	<div style="width: 600px">
+
+	  <h3>Correlation Coefficient</h3>
+
+	  <p>The correlation coefficient (r) is a measure of the linear relationship
+	  between two variables x and y. To get a sense of the connection between the
+	  appearance of points -- (x,y) pairs --  in a scatterplot and the value of r,
+	  click anywhere on the graph to add points. To remove points, click the Remove
+	  Points button and then mouseover points. The correlation coefficient is shown below.</p>
+
+	  </div>
+
+		<h3 id="cc">Two points are needed to calculate r.</h3>
+
+		<script type="text/javascript">
+
+			//  Width and height of svg
+			var w = 600;
+			var h = 400;
+			var padding = 30;
+
+			// axis min / max
+		  var xmin = -50;
+		  var xmax = 50;
+		  var ymin = -30;
+		  var ymax = 30;
+			var Decimal = d3.format(".2f")
+
+			var margin = {top: padding, right: padding, bottom: padding,
+						left: padding};
+			var innerWidth = w - margin.left - margin.right;
+			var innerHeight = h - margin.top - margin.bottom;
+			var svg = d3.select("body")
+			  .append("svg")
+			    .attr("width", w)
+			    .attr("height", h)
+
+			d3.select("svg").append("rect").attr("x", "0").attr("y", "0").attr("width", w).attr("height", h).attr("fill", "lightblue");
+
+			//		Scale functions
+			var xScale = d3.scaleLinear()
+			      .domain([xmin,xmax])
+			      .range([margin.right, innerWidth-margin.right])
+			var xAxis = d3.axisBottom()                     // NEW
+						      .scale(xScale);
+			svg.append("g").attr("class", "xAxis").attr("transform", `translate (${margin.right}, ${h/2})`)
+			.call(xAxis.ticks(5));
+
+			var yScale = d3.scaleLinear()
+			      .domain([ymin,ymax])
+			      .range([innerHeight-margin.top, margin.top])
+			var yAxis = d3.axisLeft()                     // NEW
+			      .scale(yScale);
+
+			svg.append("g")                                 // NEW
+			      .attr("class", "yAxis")
+			      .attr("transform", `translate (${w/2}, ${margin.top})`)
+			      .call(yAxis.ticks(7));
+
+
+			var action =-1;
+			datasetx=[];
+			datasety=[];
+
+      d3.select("svg").on('click', function() {
+      var coords = d3.mouse(this);
+			var x=Decimal(xScale.invert(coords[0]-margin.top));
+			var y=Decimal(yScale.invert(coords[1]-margin.top));
+			datasetx.push(coords[0]);
+			datasety.push(coords[1]);
+      if(action==-1) {
+			d3.select("svg").append("circle").attr("cx", coords[0]).attr("cy",coords[1]).attr("r", "5").attr("fill", "red")}
+			res(datasetx,datasety);
+		})
+
+
+		d3.select("svg").on('mouseover',function(){
+
+		if(action==-1){
+		svg.selectAll("circle").on("mouseover",function(d,i){
+							//svg.selectAll("text.notation").remove();
+							this.remove();
+
+							datasetx.splice(i, 1);
+						  datasety.splice(i, 1);
+							res(datasetx,datasety);
+	            })
+		}})
+
+		function res(datasetx,datasety) {
+			if(datasetx.length>=2){
+			var x_mean=d3.mean(datasetx)
+			var y_mean=d3.mean(datasety)
+			var dataset_xmean=datasetx.map(d => d-x_mean)
+			var dataset_ymean=datasety.map(d => d-y_mean)
+
+			 var sum_yy = 0;
+			 var sum_xy = 0;
+			 var sum_xx = 0;
+			for (var v = 0; v < dataset_xmean.length; v++) {
+						x = dataset_xmean[v];
+						y = dataset_ymean[v];
+						sum_xx += x*x;
+						sum_yy += y*y;
+						sum_xy += x*y;
+				}
+		var r=-sum_xy/Math.sqrt(sum_xx)/Math.sqrt(sum_yy)
+		d3.select("#cc").text(function(){return "r="+" "+Decimal(r)})
+	}
+	if (datasetx.length<2){d3.select("#cc").text("Two points are needed to calculate r.")}
+
+}
+
+		</script>
+	</body>
+</html>
